@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'recipe_detail_screen.dart' as detail;
 import 'recipe_search_results_screen.dart';
-import 'profile_screen.dart';  // Ensure this is imported
+import 'profile_screen.dart'; // Ensure this is imported
 import '../database_helper.dart';
+import 'meal_planning_screen.dart';
+import 'grocery_list_screen.dart';
+
+final dbHelper = DatabaseHelper();
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -10,8 +14,14 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  List<Map<String, dynamic>> recipes = [];
-  
+  @override
+  void initState() {
+    super.initState();
+    _fetchRecipes();
+  }
+
+  late List<Map<String, dynamic>> recipes = [];
+
   // Sample data for "This Week's Meals"
   final List<Map<String, dynamic>> weekMeals = [
     {'day': 'Monday', 'meal': 'Spaghetti'},
@@ -23,15 +33,11 @@ class _HomeScreenState extends State<HomeScreen> {
     {'day': 'Sunday', 'meal': 'Soup'},
   ];
 
-  @override
-  void initState() {
-    super.initState();
-    _fetchRecipes();
-  }
-
   void _fetchRecipes() async {
     try {
-      final allRows = await DatabaseHelper.instance.queryAll();
+      // Ensure database is initialized before querying
+      final allRows = await dbHelper.queryAllRecipes();
+
       setState(() {
         recipes = allRows;
       });
@@ -47,7 +53,8 @@ class _HomeScreenState extends State<HomeScreen> {
   void _showInsertDataDialog() {
     final TextEditingController nameController = TextEditingController();
     final TextEditingController ingredientsController = TextEditingController();
-    final TextEditingController instructionsController = TextEditingController();
+    final TextEditingController instructionsController =
+        TextEditingController();
 
     showDialog(
       context: context,
@@ -74,13 +81,16 @@ class _HomeScreenState extends State<HomeScreen> {
           actions: [
             TextButton(
               onPressed: () async {
+                await dbHelper.init();
                 String name = nameController.text;
                 String ingredients = ingredientsController.text;
                 String instructions = instructionsController.text;
 
-                if (name.isNotEmpty && ingredients.isNotEmpty && instructions.isNotEmpty) {
+                if (name.isNotEmpty &&
+                    ingredients.isNotEmpty &&
+                    instructions.isNotEmpty) {
                   try {
-                    await DatabaseHelper.instance.insert({
+                    await dbHelper.insertRecipe({
                       'name': name,
                       'ingredients': ingredients,
                       'instructions': instructions,
@@ -133,7 +143,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               );
             },
-          ),
+          ),         
           IconButton(
             icon: Icon(Icons.person),
             onPressed: () {
@@ -166,7 +176,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
-            
+
             // Featured Recipes section (Horizontal scrolling)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 16.0),
@@ -214,7 +224,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 },
               ),
             ),
-            
+
             // This Week's Meals section
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 16.0),
