@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:recipe_meal_planning_app/screens/favorites_screen.dart';
+import '../database_helper.dart';
+import 'grocery_list_screen.dart';
+import 'meal_planning_screen.dart';
 
 class RecipeDetailScreen extends StatelessWidget {
   final String recipeName;
@@ -32,7 +36,8 @@ class RecipeDetailScreen extends StatelessWidget {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(15),
                 image: DecorationImage(
-                  image: AssetImage('assets/recipe_image.png'), // Add your recipe image here
+                  image: AssetImage(
+                      'https://t3.ftcdn.net/jpg/05/60/99/66/240_F_560996661_QW68Tqj480hkYulYivdMxKqXkiWh661v.jpg'), // Add your recipe image here
                   fit: BoxFit.cover,
                 ),
               ),
@@ -68,11 +73,14 @@ class RecipeDetailScreen extends StatelessWidget {
               children: [
                 ElevatedButton.icon(
                   onPressed: () {
-                    // Navigate to Grocery List Screen
+                    List<String> ingredientList = ingredients
+                        .split(','); // Assuming ingredients are comma-separated
+                    // Navigate to Grocery List Screen with ingredients
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => GroceryListScreen(),
+                        builder: (context) =>
+                            GroceryListScreen(ingredients: ingredientList),
                       ),
                     );
                   },
@@ -91,9 +99,13 @@ class RecipeDetailScreen extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => MealPlannerScreen(),
-                      ),
+                          builder: (context) => GroceryListScreen(
+                                ingredients: [],
+                              )),
                     );
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      content: Text('Ingredients Added to List!'),
+                    ));
                   },
                   icon: Icon(Icons.calendar_today),
                   label: Text("Add to Meal Plan"),
@@ -114,6 +126,10 @@ class RecipeDetailScreen extends StatelessWidget {
                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                     content: Text('Recipe saved to Favorites!'),
                   ));
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => FavoritesScreen()),
+                  );
                 },
                 icon: Icon(Icons.favorite),
                 label: Text("Save Recipe"),
@@ -128,31 +144,6 @@ class RecipeDetailScreen extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-}
-
-// Dummy Screens for Grocery List and Meal Planner
-class GroceryListScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Grocery List"),
-      ),
-      body: Center(child: Text("Grocery List Screen")),
-    );
-  }
-}
-
-class MealPlannerScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Meal Planner"),
-      ),
-      body: Center(child: Text("Meal Planner Screen")),
     );
   }
 }

@@ -1,3 +1,4 @@
+import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
@@ -6,35 +7,38 @@ class DatabaseHelper {
   static final _databaseVersion = 1;
 
   static final table = 'recipes';
-
   static final columnId = 'id';
   static final columnName = 'name';
   static final columnIngredients = 'ingredients';
   static final columnInstructions = 'instructions';
 
-  // Make this a singleton class
-  DatabaseHelper._privateConstructor();
-  static final DatabaseHelper instance = DatabaseHelper._privateConstructor();
+  static final groceryTable = 'grocery_list';
+  static final columnGroceryId = 'id';
+  static final columnItem = 'item';
 
-  static Database? _database;
+  static final favoritesTable = "favorites";
+  static final columnFavId = 'id';
 
-  Future<Database> get database async {
-    if (_database != null) return _database!;
-    _database = await _initDatabase();
-    return _database!;
+
+  Database? _db;
+
+  Future<Database> get db async {
+    if (_db == null) {
+      await init(); // Initialize the database if it's not yet initialized
+    }
+    return _db!;
   }
 
-  // Open the database and create the table if it doesn't exist
-  _initDatabase() async {
-    String path = join(await getDatabasesPath(), _databaseName);
-    return await openDatabase(
+  Future<void> init() async {
+    final documentsDirectory = await getApplicationDocumentsDirectory();
+    final path = join(documentsDirectory.path, _databaseName);
+    _db = await openDatabase(
       path,
       version: _databaseVersion,
       onCreate: _onCreate,
     );
   }
 
-  // SQL to create the recipes table
   Future _onCreate(Database db, int version) async {
     await db.execute('''
       CREATE TABLE $table (
@@ -44,30 +48,50 @@ class DatabaseHelper {
         $columnInstructions TEXT NOT NULL
       )
     ''');
+
+    await db.execute('''
+      CREATE TABLE $groceryTable (
+        $columnGroceryId INTEGER PRIMARY KEY,
+        $columnItem TEXT NOT NULL
+      )
+    ''');
   }
 
   // Insert a recipe
-  Future<int> insert(Map<String, dynamic> row) async {
-    Database db = await instance.database;
-    return await db.insert(table, row);
+  Future<int> insertRecipe(Map<String, dynamic> row) async {
+    var dbClient = await db; // Ensure db is initialized before use
+    return await dbClient.insert(table, row);
+  }
+
+  // Insert a grocery item
+  Future<int> insertGroceryItem(Map<String, dynamic> row) async {
+    var dbClient = await db; // Ensure db is initialized before use
+    return await dbClient.insert(groceryTable, row);
   }
 
   // Query all recipes
-  Future<List<Map<String, dynamic>>> queryAll() async {
-    Database db = await instance.database;
-    return await db.query(table);
+  Future<List<Map<String, dynamic>>> queryAllRecipes() async {
+    var dbClient = await db; // Ensure db is initialized before use
+    return await dbClient.query(table);
   }
 
-  // Update a recipe
-  Future<int> update(Map<String, dynamic> row) async {
-    Database db = await instance.database;
-    int id = row[columnId];
-    return await db.update(table, row, where: '$columnId = ?', whereArgs: [id]);
+  // Query all grocery items
+  Future<List<Map<String, dynamic>>> queryAllGroceryItems() async {
+    var dbClient = await db; // Ensure db is initialized before use
+    return await dbClient.query(groceryTable);
   }
 
-  // Delete a recipe by ID
-  Future<int> delete(int id) async {
-    Database db = await instance.database;
-    return await db.delete(table, where: '$columnId = ?', whereArgs: [id]);
+  // Query all grocery items
+  // Delete a grocery item by ID
+  Future<int> deleteGroceryItem(int id) async {
+    var dbClient = await db; // Ensure db is initialized before use
+    return await dbClient
+        .delete(groceryTable, where: '$columnGroceryId = ?', whereArgs: [id]);
+  }
+
+  Future<int> deleteAllGroceryItems() async {
+    var dbClient = await db; // Initialize the database
+    return await dbClient
+        .delete(groceryTable); // Replace 'grocery_items' with your table name
   }
 }
