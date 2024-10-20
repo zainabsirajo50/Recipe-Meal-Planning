@@ -4,7 +4,7 @@ import 'package:path/path.dart';
 
 class DatabaseHelper {
   static final _databaseName = "recipesDatabase.db";
-  static final _databaseVersion = 1;
+  static final _databaseVersion = 2;
 
   static final table = 'recipes';
   static final columnId = 'id';
@@ -16,9 +16,9 @@ class DatabaseHelper {
   static final columnGroceryId = 'id';
   static final columnItem = 'item';
 
-  static final favoritesTable = "favorites";
+  static final favoritesTable = 'favorites';
   static final columnFavId = 'id';
-
+  static final columnFavName = 'name';
 
   Database? _db;
 
@@ -41,7 +41,7 @@ class DatabaseHelper {
 
   Future _onCreate(Database db, int version) async {
     await db.execute('''
-      CREATE TABLE $table (
+      CREATE TABLE IF NOT EXISTS $table (
         $columnId INTEGER PRIMARY KEY,
         $columnName TEXT NOT NULL,
         $columnIngredients TEXT NOT NULL,
@@ -50,11 +50,19 @@ class DatabaseHelper {
     ''');
 
     await db.execute('''
-      CREATE TABLE $groceryTable (
+      CREATE TABLE IF NOT EXISTS $groceryTable (
         $columnGroceryId INTEGER PRIMARY KEY,
         $columnItem TEXT NOT NULL
       )
     ''');
+
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS $favoritesTable (
+        $columnFavId INTEGER PRIMARY KEY,
+        $columnFavName TEXT NOT NULL
+      )
+    ''');
+
   }
 
   // Insert a recipe
@@ -69,6 +77,12 @@ class DatabaseHelper {
     return await dbClient.insert(groceryTable, row);
   }
 
+  // Insert a favorite recipe
+  Future<int> insertFavoriteRecipe(Map<String, dynamic> row) async {
+    var dbClient = await db; // Ensure db is initialized before use
+    return await dbClient.insert(favoritesTable, row);
+  }
+
   // Query all recipes
   Future<List<Map<String, dynamic>>> queryAllRecipes() async {
     var dbClient = await db; // Ensure db is initialized before use
@@ -81,7 +95,12 @@ class DatabaseHelper {
     return await dbClient.query(groceryTable);
   }
 
-  // Query all grocery items
+  // Query all favorite recipes
+  Future<List<Map<String, dynamic>>> queryAllFavoriteRecipes() async {
+    var dbClient = await db; // Ensure db is initialized before use
+    return await dbClient.query(favoritesTable); // Query the favorites table
+  }
+
   // Delete a grocery item by ID
   Future<int> deleteGroceryItem(int id) async {
     var dbClient = await db; // Ensure db is initialized before use
@@ -93,5 +112,12 @@ class DatabaseHelper {
     var dbClient = await db; // Initialize the database
     return await dbClient
         .delete(groceryTable); // Replace 'grocery_items' with your table name
+  }
+
+  // Delete all favorite recipes
+  Future<int> deleteAllFavoriteRecipes() async {
+    var dbClient = await db; // Ensure db is initialized before use
+    return await dbClient
+        .delete(favoritesTable); // Delete all rows from the favorites table
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'screens/home_screen.dart';
 import 'database_helper.dart';
+import 'package:recipe_meal_planning_app/screens/favorites_screen.dart';
 
 final dbHelper = DatabaseHelper();
 
