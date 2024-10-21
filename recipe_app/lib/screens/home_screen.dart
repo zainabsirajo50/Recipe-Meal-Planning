@@ -3,9 +3,6 @@ import 'recipe_detail_screen.dart' as detail;
 import 'recipe_search_results_screen.dart';
 import 'profile_screen.dart'; // Ensure this is imported
 import '../database_helper.dart';
-import 'meal_planning_screen.dart';
-import 'grocery_list_screen.dart';
-import 'favorites_screen.dart';
 
 final dbHelper = DatabaseHelper();
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:recipe_meal_planning_app/screens/favorites_screen.dart';
 import 'edit_profile_screen.dart'; // Import the EditProfileScreen
 
 class ProfileScreen extends StatelessWidget {
@@ -49,7 +50,12 @@ class ProfileScreen extends StatelessWidget {
               leading: Icon(Icons.favorite),
               title: Text('Likes'),
               onTap: () {
-                // Navigate to Likes Screen
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => FavoriteRecipesScreen(), // Navigate to Edit Profile
+                  ),
+                );
               },
             ),
           ],

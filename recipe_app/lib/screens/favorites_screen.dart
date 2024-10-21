@@ -21,7 +21,8 @@ class _FavoriteRecipesScreenState extends State<FavoriteRecipesScreen> {
     try {
       final allRows = await dbHelper.queryAllFavoriteRecipes();
       setState(() {
-        favoriteRecipes = allRows.map((recipe) => recipe['name'] as String).toList();
+        favoriteRecipes =
+            allRows.map((recipe) => recipe['name'] as String).toList();
       });
     } catch (e) {
       print("Error fetching favorite recipes: $e");
@@ -54,15 +55,15 @@ class _FavoriteRecipesScreenState extends State<FavoriteRecipesScreen> {
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text("All favorites deleted")));
     } catch (e) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text("Error deleting favorites: $e")));
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error deleting favorites: $e")));
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final TextEditingController favoriteController = TextEditingController();
-    
+
     return Scaffold(
       appBar: AppBar(title: Text("Favorite Recipes")),
       body: Column(
@@ -77,7 +78,8 @@ class _FavoriteRecipesScreenState extends State<FavoriteRecipesScreen> {
                   icon: Icon(Icons.add),
                   onPressed: () {
                     _addFavoriteRecipe(favoriteController.text);
-                    favoriteController.clear(); // Clear input field after adding
+                    favoriteController
+                        .clear(); // Clear input field after adding
                   },
                 ),
               ),

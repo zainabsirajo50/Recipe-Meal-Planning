@@ -20,6 +20,11 @@ class DatabaseHelper {
   static final columnFavId = 'id';
   static final columnFavName = 'name';
 
+  static final mealPlanTable = 'meal_plan';
+  static final columnMealId = 'id';
+  static final columnDay = 'day';
+  static final columnRecipe = 'recipe';
+
   Database? _db;
 
   Future<Database> get db async {
@@ -36,6 +41,7 @@ class DatabaseHelper {
       path,
       version: _databaseVersion,
       onCreate: _onCreate,
+      onUpgrade: _onUpgrade
     );
   }
 
@@ -63,6 +69,19 @@ class DatabaseHelper {
       )
     ''');
 
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS $mealPlanTable (
+        $columnMealId INTEGER PRIMARY KEY,
+        $columnRecipe TEXT NOT NULL,
+        $columnDay TEXT NOT NULL
+      )
+    ''');
+  }
+
+  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 3) {
+      await db.execute('ALTER TABLE $favoritesTable ADD COLUMN day TEXT');
+    }
   }
 
   // Insert a recipe
@@ -83,6 +102,14 @@ class DatabaseHelper {
     return await dbClient.insert(favoritesTable, row);
   }
 
+  Future<int> insertMealPlan(String recipeName, String day) async {
+    var dbClient = await db; // Ensure db is initialized before use
+    return await dbClient.insert(mealPlanTable, {
+      columnRecipe: recipeName, // Save recipe
+      columnDay: day,           // Save day
+    });
+  }
+
   // Query all recipes
   Future<List<Map<String, dynamic>>> queryAllRecipes() async {
     var dbClient = await db; // Ensure db is initialized before use
@@ -100,6 +127,16 @@ class DatabaseHelper {
     var dbClient = await db; // Ensure db is initialized before use
     return await dbClient.query(favoritesTable); // Query the favorites table
   }
+
+  Future<Map<String, String>> getMealPlan() async {
+  var dbClient = await db;
+  final List<Map<String, dynamic>> results = await dbClient.query(mealPlanTable);
+
+  return Map.fromIterable(results,
+    key: (e) => e['day'], 
+    value: (e) => e['recipe']
+  );
+}
 
   // Delete a grocery item by ID
   Future<int> deleteGroceryItem(int id) async {

@@ -3,7 +3,7 @@ import 'package:recipe_meal_planning_app/screens/favorites_screen.dart';
 import '../database_helper.dart';
 import 'grocery_list_screen.dart';
 import 'meal_planning_screen.dart';
-import 'favorites_screen.dart';
+
 
 final dbHelper = DatabaseHelper();
 
@@ -99,16 +99,8 @@ class RecipeDetailScreen extends StatelessWidget {
                   ),
                 ),
                 ElevatedButton.icon(
-                  onPressed: () {
-                    // Navigate to Meal Planner Screen
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => MealPlanningScreen(),
-                    ));
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                      content: Text('Ingredients Added to List!'),
-                    ));
+                  onPressed: () async {
+                    _showMealPlanDialog(context); // Call meal plan selection dialog                   
                   },
                   icon: Icon(Icons.calendar_today),
                   label: Text("Add to Meal Plan"),
@@ -118,7 +110,7 @@ class RecipeDetailScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                )
+                ),
               ],
             ),
             SizedBox(height: 16),
@@ -163,4 +155,45 @@ class RecipeDetailScreen extends StatelessWidget {
       ),
     );
   }
+  void _showMealPlanDialog(BuildContext context) {
+  final List<String> days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: Text('Select Day for $recipeName'),
+        content: SingleChildScrollView(
+          child: ListBody(
+            children: days.map((day) {
+              return ListTile(
+                title: Text(day),
+                onTap: () async {
+                  try {
+                    await dbHelper.insertMealPlan(recipeName, day); // Insert into meal plan table
+                    Navigator.of(context).pop(); // Close the dialog
+
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      content: Text('$recipeName added to meal plan for $day!'),                   
+                    ));
+
+                      // Navigate to the Favorites Screen
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => MealPlanningScreen()), // Navigate to the favorites screen
+                    );
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      content: Text('Error saving meal plan: $e'),
+                    ));
+                  }
+                },
+              );
+            }).toList(),
+          ),
+        ),
+      );
+    },
+  );
+}
 }
