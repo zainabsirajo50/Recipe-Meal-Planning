@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'recipe_detail_screen.dart' as detail; // Use 'as' for prefix
+import 'recipe_detail_screen.dart' as detail; 
 
 class RecipeSearchResultsScreen extends StatefulWidget {
   final String query;
