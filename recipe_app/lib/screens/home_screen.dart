@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'recipe_detail_screen.dart' as detail;
 import 'recipe_search_results_screen.dart';
-import 'profile_screen.dart'; // Ensure this is imported
+import 'profile_screen.dart';
 import '../database_helper.dart';
+import 'meal_planning_screen.dart';
+import 'grocery_list_screen.dart';
 
 final dbHelper = DatabaseHelper();
 
@@ -20,7 +22,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   late List<Map<String, dynamic>> recipes = [];
 
-  // Sample data for "This Week's Meals"
   final List<Map<String, dynamic>> weekMeals = [
     {'day': 'Monday', 'meal': 'Spaghetti'},
     {'day': 'Tuesday', 'meal': 'Grilled Chicken'},
@@ -33,9 +34,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _fetchRecipes() async {
     try {
-      // Ensure database is initialized before querying
       final allRows = await dbHelper.queryAllRecipes();
-
       setState(() {
         recipes = allRows;
       });
@@ -129,11 +128,11 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Recipe App'),
+        backgroundColor: Colors.purple[100], 
         actions: [
           IconButton(
             icon: Icon(Icons.search),
             onPressed: () {
-              // Navigate to search screen
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -141,11 +140,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               );
             },
-          ),         
+          ),
           IconButton(
             icon: Icon(Icons.person),
             onPressed: () {
-              // Navigate to the profile page
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -156,94 +154,101 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      body: SingleChildScrollView(
+      body: Container(
+        color: Colors.purple[50], // Set a light purple background
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Search Bar at the top
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8.0),
-              child: TextField(
-                decoration: InputDecoration(
-                  prefixIcon: Icon(Icons.search),
-                  hintText: 'Search for recipes...',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Search Bar
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: TextField(
+                  decoration: InputDecoration(
+                    prefixIcon: Icon(Icons.search),
+                    hintText: 'Search for recipes...',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(color: Colors.deepPurple), 
+                    ),
                   ),
                 ),
               ),
-            ),
 
-            // Featured Recipes section (Horizontal scrolling)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 16.0),
-              child: Text(
-                "Featured Recipes",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              // Featured Recipes section
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16.0),
+                child: Text(
+                  "Featured Recipes",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.deepPurple), // Text color
+                ),
               ),
-            ),
-            SizedBox(
-              height: 150,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: recipes.length,
-                itemBuilder: (context, index) {
-                  return Card(
-                    elevation: 4,
-                    margin: EdgeInsets.symmetric(horizontal: 8),
-                    child: InkWell(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => detail.RecipeDetailScreen(
-                              recipeName: recipes[index]['name'],
-                              ingredients: recipes[index]['ingredients'],
-                              steps: recipes[index]['instructions'],
-                              nutritionInfo: 'Sample nutrition info...',
+              SizedBox(
+                height: 150,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: recipes.length,
+                  itemBuilder: (context, index) {
+                    return Card(
+                      elevation: 4,
+                      margin: EdgeInsets.symmetric(horizontal: 8),
+                      child: InkWell(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => detail.RecipeDetailScreen(
+                                recipeName: recipes[index]['name'],
+                                ingredients: recipes[index]['ingredients'],
+                                steps: recipes[index]['instructions'],
+                                nutritionInfo: 'Sample nutrition info...',
+                              ),
                             ),
+                          );
+                        },
+                        child: Container(
+                          width: 150,
+                          padding: const EdgeInsets.all(8.0),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.fastfood, size: 50, color: Colors.deepPurple), // Icon color
+                              Text(
+                                recipes[index]['name'],
+                                style: TextStyle(color: Colors.deepPurple), // Text color
+                              ),
+                            ],
                           ),
-                        );
-                      },
-                      child: Container(
-                        width: 150,
-                        padding: const EdgeInsets.all(8.0),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.fastfood, size: 50),
-                            Text(recipes[index]['name']),
-                          ],
                         ),
                       ),
-                    ),
+                    );
+                  },
+                ),
+              ),
+
+              // This Week's Meals section
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16.0),
+                child: Text(
+                  "This Week's Meals",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.deepPurple), // Text color
+                ),
+              ),
+              ListView.builder(
+                shrinkWrap: true,
+                physics: NeverScrollableScrollPhysics(),
+                itemCount: weekMeals.length,
+                itemBuilder: (context, index) {
+                  return ListTile(
+                    leading: Icon(Icons.restaurant, color: Colors.deepPurple), // Icon color
+                    title: Text(weekMeals[index]['day']),
+                    subtitle: Text(weekMeals[index]['meal']),
                   );
                 },
               ),
-            ),
-
-            // This Week's Meals section
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 16.0),
-              child: Text(
-                "This Week's Meals",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-            ),
-            ListView.builder(
-              shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
-              itemCount: weekMeals.length,
-              itemBuilder: (context, index) {
-                return ListTile(
-                  leading: Icon(Icons.restaurant),
-                  title: Text(weekMeals[index]['day']),
-                  subtitle: Text(weekMeals[index]['meal']),
-                );
-              },
-            ),
-          ],
+            ],
+          ),
         ),
       ),
       floatingActionButton: FloatingActionButton(
@@ -251,6 +256,7 @@ class _HomeScreenState extends State<HomeScreen> {
           _showInsertDataDialog();
         },
         child: Icon(Icons.add),
+        backgroundColor: Colors.purple[100], 
       ),
     );
   }

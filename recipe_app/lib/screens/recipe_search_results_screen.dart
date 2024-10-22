@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'recipe_detail_screen.dart' as detail; // Use 'as' for prefix
+import 'recipe_detail_screen.dart' as detail; 
 
 class RecipeSearchResultsScreen extends StatefulWidget {
   final String query;
@@ -45,8 +45,9 @@ class _RecipeSearchResultsScreenState extends State<RecipeSearchResultsScreen> {
     setState(() {
       filteredRecipes = allRecipes.where((recipe) {
         // Check if the recipe name contains the search query
-        bool matchesQuery =
-            recipe.toLowerCase().contains(searchController.text.toLowerCase());
+        bool matchesQuery = recipe
+            .toLowerCase()
+            .contains(searchController.text.toLowerCase());
 
         // Check for dietary filter
         if (selectedFilter == 'All') {
@@ -146,8 +147,7 @@ class _RecipeSearchResultsScreenState extends State<RecipeSearchResultsScreen> {
                     child: Center(
                       child: Text(
                         filteredRecipes[index],
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold),
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                       ),
                     ),
                   ),
