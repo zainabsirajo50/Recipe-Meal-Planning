@@ -114,13 +114,13 @@ class _GroceryListScreenState extends State<GroceryListScreen> {
               itemBuilder: (context, index) {
                 return ListTile(
                   title: Text(groceryItems[index]),
-                  // Add a checkbox for checking off items
+                  
                   trailing: Checkbox(
                     value:
-                        false, // Implement your logic to manage checked state
+                        false, 
                     onChanged: (bool? value) {
                       setState(() {
-                        // Manage checked state here
+                        
                       });
                     },
                   ),

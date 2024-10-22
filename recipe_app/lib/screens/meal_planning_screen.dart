@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import '../database_helper.dart'; // Import your DatabaseHelper
+
+final dbHelper = DatabaseHelper(); // Initialize DatabaseHelper
 
 class MealPlanningScreen extends StatefulWidget {
   @override
@@ -6,6 +9,16 @@ class MealPlanningScreen extends StatefulWidget {
 }
 
 class _MealPlanningScreenState extends State<MealPlanningScreen> {
+  // This is the list of available recipes for selection
+  final List<String> recipes = [
+    'Vegan Tacos',
+    'Gluten-Free Pancakes',
+    'Chicken Alfredo',
+    'Vegan Stir Fry',
+    'Gluten-Free Brownies',
+  ];
+  
+  
   Map<String, String> mealPlan = {
     'Monday': '',
     'Tuesday': '',
@@ -16,13 +29,21 @@ class _MealPlanningScreenState extends State<MealPlanningScreen> {
     'Sunday': '',
   };
 
-  final List<String> recipes = [
-    'Vegan Tacos',
-    'Gluten-Free Pancakes',
-    'Chicken Alfredo',
-    'Vegan Stir Fry',
-    'Gluten-Free Brownies',
-  ];
+  final dbHelper = DatabaseHelper();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadMealPlan();
+  }
+
+  // Load meal plan from the database
+  void _loadMealPlan() async {
+    Map<String, String> loadedMealPlan = await dbHelper.getMealPlan();
+    setState(() {
+      mealPlan = loadedMealPlan;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -63,10 +84,13 @@ class _MealPlanningScreenState extends State<MealPlanningScreen> {
               children: recipes.map((recipe) {
                 return ListTile(
                   title: Text(recipe),
-                  onTap: () {
-                    setState(() {
-                      mealPlan[day] = recipe;
-                    });
+                  onTap: () async {
+                    // Insert into meal plan table
+                    await dbHelper.insertMealPlan(recipe, day);
+                    
+                    // Refresh the screen with the updated meal plan
+                    _loadMealPlan();
+
                     Navigator.of(context).pop();
                   },
                 );
@@ -77,4 +101,21 @@ class _MealPlanningScreenState extends State<MealPlanningScreen> {
       },
     );
   }
+
+  void _saveMealPlan(String day, String recipe) async {
+    try {
+      await dbHelper.insertMealPlan(recipe, day); // Pass recipe and day
+
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('$recipe added to meal plan for $day!'),
+      ));
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('Error saving meal plan: $e'),
+      ));
+    }
+  }
 }
+
+  
+

@@ -4,11 +4,16 @@ import '../database_helper.dart';
 import 'grocery_list_screen.dart';
 import 'meal_planning_screen.dart';
 
+
+final dbHelper = DatabaseHelper();
+
 class RecipeDetailScreen extends StatelessWidget {
   final String recipeName;
   final String ingredients;
   final String steps;
   final String nutritionInfo;
+
+  
 
   RecipeDetailScreen({
     required this.recipeName,
@@ -36,8 +41,8 @@ class RecipeDetailScreen extends StatelessWidget {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(15),
                 image: DecorationImage(
-                  image: AssetImage(
-                      'https://t3.ftcdn.net/jpg/05/60/99/66/240_F_560996661_QW68Tqj480hkYulYivdMxKqXkiWh661v.jpg'), // Add your recipe image here
+                  image: NetworkImage(
+                      'https://t4.ftcdn.net/jpg/05/38/59/29/240_F_538592931_FMXRupHWHH6lUnXgWcaJZuhO3gMc0B7k.jpg'), // Add your recipe image here
                   fit: BoxFit.cover,
                 ),
               ),
@@ -94,18 +99,8 @@ class RecipeDetailScreen extends StatelessWidget {
                   ),
                 ),
                 ElevatedButton.icon(
-                  onPressed: () {
-                    // Navigate to Meal Planner Screen
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => GroceryListScreen(
-                                ingredients: [],
-                              )),
-                    );
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                      content: Text('Ingredients Added to List!'),
-                    ));
+                  onPressed: () async {
+                    _showMealPlanDialog(context); // Call meal plan selection dialog                   
                   },
                   icon: Icon(Icons.calendar_today),
                   label: Text("Add to Meal Plan"),
@@ -121,20 +116,34 @@ class RecipeDetailScreen extends StatelessWidget {
             SizedBox(height: 16),
             Center(
               child: ElevatedButton.icon(
-                onPressed: () {
-                  // Save the recipe to Favorites
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                    content: Text('Recipe saved to Favorites!'),
-                  ));
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => FavoritesScreen()),
-                  );
+                onPressed: () async {
+                  // Insert recipe name into favorites database
+                  try {
+                    await dbHelper.insertFavoriteRecipe({
+                      'name': recipeName, // Insert recipe name
+                    });
+
+                    // Show a confirmation message
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      content: Text('$recipeName added to favorites!'),
+                    ));
+
+                     // Navigate to the Favorites Screen
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => FavoriteRecipesScreen()), // Navigate to the favorites screen
+                    );
+                  } catch (e) {
+                    // Show an error message in case of failure
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      content: Text('Error adding to favorites: $e'),
+                    ));
+                  }
                 },
                 icon: Icon(Icons.favorite),
-                label: Text("Save Recipe"),
+                label: Text("Add to Favorites"),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.purple[300],
+                  backgroundColor: Colors.red[200],
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -146,4 +155,45 @@ class RecipeDetailScreen extends StatelessWidget {
       ),
     );
   }
+  void _showMealPlanDialog(BuildContext context) {
+  final List<String> days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: Text('Select Day for $recipeName'),
+        content: SingleChildScrollView(
+          child: ListBody(
+            children: days.map((day) {
+              return ListTile(
+                title: Text(day),
+                onTap: () async {
+                  try {
+                    await dbHelper.insertMealPlan(recipeName, day); // Insert into meal plan table
+                    Navigator.of(context).pop(); // Close the dialog
+
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      content: Text('$recipeName added to meal plan for $day!'),                   
+                    ));
+
+                      // Navigate to the Favorites Screen
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => MealPlanningScreen()), // Navigate to the favorites screen
+                    );
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      content: Text('Error saving meal plan: $e'),
+                    ));
+                  }
+                },
+              );
+            }).toList(),
+          ),
+        ),
+      );
+    },
+  );
+}
 }
