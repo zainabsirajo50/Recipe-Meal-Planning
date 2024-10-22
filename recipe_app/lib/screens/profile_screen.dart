@@ -90,7 +90,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 // Navigate to FavoritesScreen
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => FavoriteRecipesScreen()),
+                  MaterialPageRoute(builder: (context) => FavoritesScreen()),
                 );
               },
             ),
