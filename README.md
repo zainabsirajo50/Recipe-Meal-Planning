@@ -17,13 +17,19 @@ This **Recipe App** allows users to create, store, and manage their recipes. Use
 
 ## How to Run
 
-1. Clone the repository  
+ **1. Clone the repository**   
+ 
   `git clone https://github.com/zainabsirajo50/recipe-app.git`
 
-2. Navigate to the project directory  
-   `cd recipe-app`
-4. Install Dependencies  
-   `flutter pub get`
-5. Run the App  
+**2. Navigate to the project directory**
+
+   `cd recipe-app`  
+   
+**3. Install Dependencies** 
+
+   `flutter pub get`  
+   
+**4. Run the App**  
+
   `flutter run`
 
